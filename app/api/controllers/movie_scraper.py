@@ -18,7 +18,7 @@ class TitleSearchInput(BaseModel):
 
 
 class MovieScraperController(Controller):
-    path = "/api/movie"
+    path = "/movie"
     dependencies = {"movie_scraper": Provide(generate_movie_scraper)}
 
     @post(path="search_title", sync_to_thread=True)

@@ -1,5 +1,9 @@
 from litestar import Litestar
 
-from app.api.controllers.movie_scraper import MovieScraperController
+from app.api.api import router as api_router
 
-app = Litestar(route_handlers=[MovieScraperController], debug=True)
+app = Litestar(
+    debug=True
+)
+
+app.register(api_router)
