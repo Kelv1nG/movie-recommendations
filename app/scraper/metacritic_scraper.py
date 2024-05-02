@@ -20,7 +20,7 @@ RESULT_RATING_SELECTOR = HtmlElementSelector(tag="div", css="c-siteReviewScore")
 class MetacriticScraper(AbstractMovieScraper):
     @property
     def site_url(self):
-        return "https://www.metacritic.com/"
+        return "https://www.metacritic.com"
 
     def search_movie_title(self, title: str) -> list:
         response = self._search_title(title)
@@ -46,7 +46,7 @@ class MetacriticScraper(AbstractMovieScraper):
         :param title: A string, the title to search for.
         :return: The HTML content of the search results page.
         """
-        encoded_query = quote(f"search/{title}")
+        encoded_query = quote(f"/search/{title}")
         full_url = f"{self.site_url}{encoded_query}"
         response = requests.get(full_url, headers=self.USER_AGENT)
         return response.text
@@ -76,8 +76,7 @@ class MetacriticScraper(AbstractMovieScraper):
         """
         return result["type"] == "movie"
 
-    @staticmethod
-    def _get_result_details_from_element(tag: bs4.element.Tag) -> dict:
+    def _get_result_details_from_element(self, tag: bs4.element.Tag) -> dict:
         """
         Extract the details from the given tag.
         :param tag: A BeautifulSoup pageElement representing a search result.
@@ -88,7 +87,7 @@ class MetacriticScraper(AbstractMovieScraper):
             result_tag = element_tag.find(selector.tag, selector.css)
             return result_tag.text.strip() if result_tag is not None else None
 
-        url = tag.get("href")
+        url = f'{self.site_url}{tag.get("href")}'
         name = extract_text(tag, RESULT_NAME_SELECTOR)
         type_ = extract_text(tag, RESULT_TYPE_SELECTOR)
         date = extract_text(tag, RESULT_DATE_SELECTOR)
