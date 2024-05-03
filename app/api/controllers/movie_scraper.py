@@ -1,6 +1,6 @@
 from collections.abc import Generator
 
-from litestar import Controller, get, post
+from litestar import Controller, get
 from litestar.di import Provide
 from pydantic import BaseModel
 
@@ -13,16 +13,16 @@ def generate_movie_scraper() -> Generator[AbstractMovieScraper, None, None]:
     yield MetacriticScraper()
 
 
-class TitleSearchInput(BaseModel):
-    title: str
+# class TitleSearchInput(BaseModel):
+#     title: str
 
 
 class MovieScraperController(Controller):
     path = "/movie"
     dependencies = {"movie_scraper": Provide(generate_movie_scraper)}
 
-    @post(path="search_title", sync_to_thread=True)
+    @get(path="/", sync_to_thread=True)
     def search_movie(
-        self, data: TitleSearchInput, movie_scraper: AbstractMovieScraper
+        self, title: str, movie_scraper: AbstractMovieScraper
     ) -> list[schemas.Movie]:
-        return movie_scraper.search_movie_title(data.title)
+        return movie_scraper.search_movie_title(title)
