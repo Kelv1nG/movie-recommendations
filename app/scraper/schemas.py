@@ -10,7 +10,8 @@ class HtmlElementSelector:
 
 
 class Movie(BaseModel):
-    url: str
+    movie_url: str
+    thumbnail_url: str | None
     name: str
     type: str
     year: int
