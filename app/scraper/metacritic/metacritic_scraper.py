@@ -1,12 +1,12 @@
 from urllib.parse import quote
 
 import bs4
-import requests
 from bs4 import BeautifulSoup
-from playwright.sync_api import sync_playwright
 
 from app.scraper.abstract_scraper import AbstractMovieScraper
 from app.scraper.schemas import HtmlElementSelector, Movie
+
+from .utils import fetch_search_results_with_playwright
 
 SEARCH_RESULTS_SELECTOR = HtmlElementSelector(
     tag="a", css="c-pageSiteSearch-results-item"
@@ -112,38 +112,6 @@ class MetacriticScraper(AbstractMovieScraper):
             "rating": rating,
         }
 
-    def _get_search_page_content(self, site_url):
-        def fetch_with_playwright(url):
-            """
-            Fetch page content using Playwright for dynamic content.
-            :param url: site url
-            :return: page content in string format
-            """
-            with sync_playwright() as pw:
-                browser = pw.chromium.launch(headless=False)
-                page = browser.new_page()
-                page.goto(url, wait_until="domcontentloaded")
-                # Since Metacritic lazily loads images
-                page.keyboard.down("End")
-                page.wait_for_function(
-                    expression="""
-                    () => { 
-                            const images = document.querySelectorAll("img");
-                            const lastFiveImages = Array.from(images).slice(-5);
-                            return lastFiveImages.some(img => img.src !== ""); 
-                        }
-                    """,
-                    timeout=10000,
-                )
-                return page.content()
-
-        def fetch_with_requests(url):
-            """
-            Fetch page content using Requests for static content.
-            :param url: site url
-            :return: page content in string format
-            """
-            response = requests.get(url, headers=self.USER_AGENT)
-            return response.text
-
-        return fetch_with_playwright(site_url)
+    @staticmethod
+    def _get_search_page_content(site_url) -> str:
+        return fetch_search_results_with_playwright(site_url)
