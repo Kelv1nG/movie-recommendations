@@ -1,17 +1,19 @@
 from urllib.parse import quote
 
 import bs4
-import requests
 from bs4 import BeautifulSoup
 
 from app.scraper.abstract_scraper import AbstractMovieScraper
 from app.scraper.schemas import HtmlElementSelector, Movie
+
+from .utils import fetch_search_results_with_playwright
 
 SEARCH_RESULTS_SELECTOR = HtmlElementSelector(
     tag="a", css="c-pageSiteSearch-results-item"
 )
 # selectors for each result in search results
 RESULT_NAME_SELECTOR = HtmlElementSelector(tag="p", css="g-text-medium-fluid")
+RESULT_IMAGE_SELECTOR = HtmlElementSelector(tag="picture", css="c-cmsImage")
 RESULT_TYPE_SELECTOR = HtmlElementSelector(tag="span", css="c-tagList_button")
 RESULT_DATE_SELECTOR = HtmlElementSelector(tag="span", css="u-text-uppercase")
 RESULT_RATING_SELECTOR = HtmlElementSelector(tag="div", css="c-siteReviewScore")
@@ -23,11 +25,12 @@ class MetacriticScraper(AbstractMovieScraper):
         return "https://www.metacritic.com"
 
     def search_movie_title(self, title: str) -> list:
-        response = self._search_title(title)
+        response = self._fetch_search_results_html(title)
         parsed_results = self._parse_search_results(response)
         return [
             Movie(
-                url=details["url"],
+                movie_url=details["movie_url"],
+                thumbnail_url=details["thumbnail_url"],
                 name=details["name"],
                 type=details["type"],
                 year=int(details["date"]),
@@ -40,7 +43,7 @@ class MetacriticScraper(AbstractMovieScraper):
     def get_movie_details(self, movie_slug):
         pass
 
-    def _search_title(self, title: str) -> str:
+    def _fetch_search_results_html(self, title: str) -> str:
         """
         Search for the given title on metacritic.com
         :param title: A string, the title to search for.
@@ -48,8 +51,8 @@ class MetacriticScraper(AbstractMovieScraper):
         """
         encoded_query = quote(f"/search/{title}")
         full_url = f"{self.site_url}{encoded_query}"
-        response = requests.get(full_url, headers=self.USER_AGENT)
-        return response.text
+        content = self._get_search_page_content(site_url=full_url)
+        return content
 
     def _parse_search_results(self, html_text: str) -> list[dict]:
         """
@@ -87,9 +90,28 @@ class MetacriticScraper(AbstractMovieScraper):
             result_tag = element_tag.find(selector.tag, selector.css)
             return result_tag.text.strip() if result_tag is not None else None
 
-        url = f'{self.site_url}{tag.get("href")}'
+        def extract_image_thumbnail_url(element_tag, selector):
+            result_tag = element_tag.find(selector.tag, selector.css)
+            if result_tag:
+                image_tag = result_tag.find("img")
+                return image_tag["src"] if image_tag else None
+            return None
+
+        movie_url = f'{self.site_url}{tag.get("href")}'
+        thumbnail_url = extract_image_thumbnail_url(tag, RESULT_IMAGE_SELECTOR)
         name = extract_text(tag, RESULT_NAME_SELECTOR)
         type_ = extract_text(tag, RESULT_TYPE_SELECTOR)
         date = extract_text(tag, RESULT_DATE_SELECTOR)
         rating = extract_text(tag, RESULT_RATING_SELECTOR)
-        return {"url": url, "name": name, "type": type_, "date": date, "rating": rating}
+        return {
+            "movie_url": movie_url,
+            "thumbnail_url": thumbnail_url,
+            "name": name,
+            "type": type_,
+            "date": date,
+            "rating": rating,
+        }
+
+    @staticmethod
+    def _get_search_page_content(site_url) -> str:
+        return fetch_search_results_with_playwright(site_url)

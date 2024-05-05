@@ -2,8 +2,6 @@ from abc import ABC, abstractmethod
 
 
 class AbstractMovieScraper(ABC):
-    USER_AGENT = {"User-agent": "Mozilla/5.0"}
-
     @property
     @abstractmethod
     def site_url(self):
