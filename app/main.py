@@ -1,9 +1,13 @@
 from litestar import Litestar
 
-from app.api.api import router as api_router
+from app.api.routers import route_handlers
 
-app = Litestar(
-    debug=True,
-)
 
-app.register(api_router)
+def create_app(**kwargs: any) -> Litestar:
+    return Litestar(
+        route_handlers=route_handlers,
+        **kwargs,
+    )
+
+
+app = create_app(debug=True)
