@@ -8,9 +8,9 @@ class AbstractMovieScraper(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def search_movie_title(self, title: str) -> list:
+    async def search_movie_title(self, title: str) -> list:
         raise NotImplementedError
 
     @abstractmethod
-    def get_movie_details(self, movie_slug):
+    async def get_movie_details(self, movie_slug):
         raise NotImplementedError
