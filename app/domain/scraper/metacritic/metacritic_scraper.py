@@ -5,19 +5,10 @@ import bs4
 from bs4 import BeautifulSoup
 
 from app.domain.scraper.abstract_scraper import AbstractMovieScraper
-from app.domain.scraper.schemas import HtmlElementSelector, Movie
+from app.domain.scraper.metacritic import selectors
+from app.domain.scraper.schemas import Movie
 
 from .helpers import fetch_search_results_with_playwright
-
-SEARCH_RESULTS_SELECTOR = HtmlElementSelector(
-    tag="a", css="c-pageSiteSearch-results-item"
-)
-# selectors for each result in search results
-RESULT_NAME_SELECTOR = HtmlElementSelector(tag="p", css="g-text-medium-fluid")
-RESULT_IMAGE_SELECTOR = HtmlElementSelector(tag="picture", css="c-cmsImage")
-RESULT_TYPE_SELECTOR = HtmlElementSelector(tag="span", css="c-tagList_button")
-RESULT_DATE_SELECTOR = HtmlElementSelector(tag="span", css="u-text-uppercase")
-RESULT_RATING_SELECTOR = HtmlElementSelector(tag="div", css="c-siteReviewScore")
 
 
 class MetacriticScraper(AbstractMovieScraper):
@@ -69,14 +60,14 @@ class MetacriticScraper(AbstractMovieScraper):
             :return: True if the element contains an image element, False otherwise.
             """
             image_element = element.find(
-                RESULT_IMAGE_SELECTOR.tag, RESULT_IMAGE_SELECTOR.css
+                selectors.RESULT_IMAGE_SELECTOR.tag, selectors.RESULT_IMAGE_SELECTOR.css
             )
             return image_element is not None
 
         soup = BeautifulSoup(html_text, features="html.parser")
         result_set = soup.find_all(
-            SEARCH_RESULTS_SELECTOR.tag,
-            SEARCH_RESULTS_SELECTOR.css,
+            selectors.SEARCH_RESULTS_SELECTOR.tag,
+            selectors.SEARCH_RESULTS_SELECTOR.css,
         )
         filtered_result_set = filter(has_image_element, result_set)
         parsed_results = [
@@ -114,11 +105,11 @@ class MetacriticScraper(AbstractMovieScraper):
 
         movie_url = f'{self.site_url}{tag.get("href")}'
         thumbnail_url, title, type_, date, rating = await asyncio.gather(
-            extract_image_thumbnail_url(tag, RESULT_IMAGE_SELECTOR),
-            extract_text(tag, RESULT_NAME_SELECTOR),
-            extract_text(tag, RESULT_TYPE_SELECTOR),
-            extract_text(tag, RESULT_DATE_SELECTOR),
-            extract_text(tag, RESULT_RATING_SELECTOR),
+            extract_image_thumbnail_url(tag, selectors.RESULT_IMAGE_SELECTOR),
+            extract_text(tag, selectors.RESULT_NAME_SELECTOR),
+            extract_text(tag, selectors.RESULT_TYPE_SELECTOR),
+            extract_text(tag, selectors.RESULT_DATE_SELECTOR),
+            extract_text(tag, selectors.RESULT_RATING_SELECTOR),
         )
         return {
             "movie_url": movie_url,
