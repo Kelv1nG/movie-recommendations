@@ -12,5 +12,5 @@ class AbstractMovieScraper(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def get_movie_details(self, movie_slug):
+    async def get_movie_details(self, movie_slug: str) -> dict:
         raise NotImplementedError

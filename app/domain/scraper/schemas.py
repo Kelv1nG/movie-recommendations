@@ -16,3 +16,17 @@ class Movie(BaseModel):
     type: str
     year: int | None
     rating: str
+
+
+class MovieDetails(BaseModel):
+    movie_url: str
+    movie_slug: str
+    description: str
+    genres: list[str]
+    release_date: str
+    duration: str
+    casts: list[str]
+    production_companies: list[str]
+    meta_score: str
+    user_score: str
+    rating: str
