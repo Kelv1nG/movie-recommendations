@@ -19,4 +19,13 @@ class MovieScraperController(Controller):
     async def search_movie(
         self, title: str, movie_scraper: AbstractMovieScraper
     ) -> list[schemas.Movie]:
-        return await movie_scraper.search_movie_title(title)
+        return [
+            schemas.Movie(**details)
+            for details in await movie_scraper.search_movie_title(title)
+        ]
+
+    @get(path=urls.MOVIE_DETAIL, sync_to_thread=True)
+    def movie_details(
+        self, movie_slug: str, movie_scraper: MetacriticScraper
+    ) -> schemas.MovieDetails:
+        return schemas.MovieDetails(**movie_scraper.get_movie_details(movie_slug))
