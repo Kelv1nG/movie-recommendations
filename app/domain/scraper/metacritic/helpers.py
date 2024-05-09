@@ -6,8 +6,7 @@ from playwright.async_api import async_playwright
 
 from app.domain.scraper.metacritic import selectors
 
-from .constants import (WAIT_FOR_FILTER_MOVIES_RESULT,
-                        WAIT_FOR_MOVIE_IMAGES_TO_LOAD)
+from .constants import WAIT_FOR_FILTER_MOVIES_RESULT, WAIT_FOR_MOVIE_IMAGES_TO_LOAD
 
 
 async def fetch_search_results_with_playwright(url) -> str:

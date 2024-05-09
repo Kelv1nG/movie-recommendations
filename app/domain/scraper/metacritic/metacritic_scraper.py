@@ -8,8 +8,11 @@ from app.domain.scraper import schemas
 from app.domain.scraper.abstract_scraper import AbstractMovieScraper
 from app.domain.scraper.metacritic import selectors
 
-from .helpers import (extract_movie_details, fetch_details_with_requests,
-                      fetch_search_results_with_playwright)
+from .helpers import (
+    extract_movie_details,
+    fetch_details_with_requests,
+    fetch_search_results_with_playwright,
+)
 
 
 class MetacriticScraper(AbstractMovieScraper):
@@ -106,7 +109,7 @@ class MetacriticScraper(AbstractMovieScraper):
             extract_image_thumbnail_url(tag, selectors.RESULT_IMAGE_SELECTOR),
             extract_text(tag, selectors.RESULT_NAME_SELECTOR),
             extract_text(tag, selectors.RESULT_TYPE_SELECTOR),
-            extract_text(tag, selectors.RESULT_DATE_SELECTOR),
+            extract_text(tag, selectors.RESULT_YEAR_SELECTOR),
             extract_text(tag, selectors.RESULT_RATING_SELECTOR),
         )
         return {
@@ -114,7 +117,7 @@ class MetacriticScraper(AbstractMovieScraper):
             "thumbnail_url": thumbnail_url,
             "title": title,
             "type": type_,
-            "date": date,
+            "year": date,
             "rating": rating,
         }
 

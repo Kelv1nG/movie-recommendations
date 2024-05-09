@@ -7,7 +7,7 @@ SEARCH_RESULTS_SELECTOR = HtmlElementSelector(
 RESULT_NAME_SELECTOR = HtmlElementSelector(tag="p", css="g-text-medium-fluid")
 RESULT_IMAGE_SELECTOR = HtmlElementSelector(tag="picture", css="c-cmsImage")
 RESULT_TYPE_SELECTOR = HtmlElementSelector(tag="span", css="c-tagList_button")
-RESULT_DATE_SELECTOR = HtmlElementSelector(tag="span", css="u-text-uppercase")
+RESULT_YEAR_SELECTOR = HtmlElementSelector(tag="span", css="u-text-uppercase")
 RESULT_RATING_SELECTOR = HtmlElementSelector(tag="div", css="c-siteReviewScore")
 
 # selectors for specific movie
