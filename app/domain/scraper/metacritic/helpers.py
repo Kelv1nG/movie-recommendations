@@ -1,9 +1,13 @@
 import asyncio
 
 import requests
+from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
 
-from .constants import WAIT_FOR_FILTER_MOVIES_RESULT, WAIT_FOR_MOVIE_IMAGES_TO_LOAD
+from app.domain.scraper.metacritic import selectors
+
+from .constants import (WAIT_FOR_FILTER_MOVIES_RESULT,
+                        WAIT_FOR_MOVIE_IMAGES_TO_LOAD)
 
 
 async def fetch_search_results_with_playwright(url) -> str:
@@ -42,7 +46,7 @@ async def fetch_search_results_with_playwright(url) -> str:
         return ""
 
 
-def fetch_search_results_with_requests(url):
+def fetch_details_with_requests(url) -> str:
     """
     Fetch page content using Requests for static content.
     :param url: site url
@@ -50,3 +54,76 @@ def fetch_search_results_with_requests(url):
     """
     response = requests.get(url, headers={"User-agent": "Mozilla/5.0"})
     return response.text
+
+
+def extract_movie_details(soup: BeautifulSoup) -> dict:
+    def extract_details() -> dict:
+        _details_dict = {}
+        details = soup.find_all(
+            selectors.DETAIL_DETAILS_SELECTOR.tag, selectors.DETAIL_DETAILS_SELECTOR.css
+        )
+        production_companies, release_date, duration, rating, *_ = [
+            detail.text.strip() for detail in details
+        ]
+        _details_dict["production_companies"] = [
+            company.strip()
+            for company in production_companies.replace("Production Company", "").split(
+                ","
+            )
+        ]
+        _details_dict["release_date"] = release_date.replace("Release Date", "").strip()
+        _details_dict["duration"] = duration.replace("Duration", "").strip()
+        _details_dict["rating"] = rating.replace("Rating", "").strip()
+
+        return _details_dict
+
+    def extract_directors() -> list:
+
+        director_text = soup.find(
+            selectors.DETAIL_DIRECTOR_SELECTOR.tag,
+            selectors.DETAIL_DIRECTOR_SELECTOR.css,
+        ).text.strip()
+        index = director_text.find("Directed By:")
+        _directors = [
+            director.strip()
+            for director in director_text[index + len("Directed By:") :].split(",")
+        ]
+        return _directors
+
+    genres = {
+        genre.text.strip()
+        for genre in soup.find_all(
+            selectors.DETAIL_GENRE_SELECTOR.tag, selectors.DETAIL_GENRE_SELECTOR.css
+        )
+    }
+
+    casts = [
+        cast.text.strip()
+        for cast in soup.find_all(
+            selectors.DETAIL_CAST_SELECTOR.tag, selectors.DETAIL_CAST_SELECTOR.css
+        )
+    ]
+
+    description = soup.find(
+        selectors.DETAIL_SUMMARY_SELECTOR.tag, selectors.DETAIL_SUMMARY_SELECTOR.css
+    ).text.strip()
+
+    meta_score, user_score = [
+        score.text.strip()
+        for score in soup.find_all(
+            selectors.DETAIL_SCORE_SELECTOR.tag, selectors.DETAIL_SCORE_SELECTOR.css
+        )
+    ]
+
+    details_dict = extract_details()
+    directors = extract_directors()
+
+    return {
+        "genres": genres,
+        "casts": casts,
+        "description": description,
+        "directors": directors,
+        "meta_score": meta_score,
+        "user_score": user_score,
+        **details_dict,
+    }

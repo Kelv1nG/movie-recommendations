@@ -4,11 +4,12 @@ from urllib.parse import quote
 import bs4
 from bs4 import BeautifulSoup
 
+from app.domain.scraper import schemas
 from app.domain.scraper.abstract_scraper import AbstractMovieScraper
 from app.domain.scraper.metacritic import selectors
-from app.domain.scraper.schemas import Movie
 
-from .helpers import fetch_search_results_with_playwright
+from .helpers import (extract_movie_details, fetch_details_with_requests,
+                      fetch_search_results_with_playwright)
 
 
 class MetacriticScraper(AbstractMovieScraper):
@@ -20,20 +21,17 @@ class MetacriticScraper(AbstractMovieScraper):
         response = await self._fetch_search_results_html(title)
         parsed_results = await self._parse_search_results(response)
         return [
-            Movie(
-                movie_url=details["movie_url"],
-                thumbnail_url=details["thumbnail_url"],
-                title=details["title"],
-                type=details["type"],
-                year=details["date"],
-                rating=details["rating"],
-            )
-            for details in parsed_results
-            if self._is_result_item_movie(details)
+            details for details in parsed_results if self._is_result_item_movie(details)
         ]
 
-    def get_movie_details(self, movie_slug):
-        pass
+    def get_movie_details(self, movie_slug: str) -> dict:
+        encoded_query = quote(f"/movie/{movie_slug}")
+        url = f"{self.site_url}{encoded_query}"
+        soup = BeautifulSoup(
+            fetch_details_with_requests(url=url), features="html.parser"
+        )
+        details = extract_movie_details(soup)
+        return {"movie_url": url, "movie_slug": movie_slug, **details}
 
     async def _fetch_search_results_html(self, title: str) -> str:
         """
@@ -42,8 +40,8 @@ class MetacriticScraper(AbstractMovieScraper):
         :return: The HTML content of the search results page.
         """
         encoded_query = quote(f"/search/{title}")
-        full_url = f"{self.site_url}{encoded_query}"
-        content = await self._get_search_page_content(site_url=full_url)
+        url = f"{self.site_url}{encoded_query}"
+        content = await self._get_search_page_content(url=url)
         return content
 
     async def _parse_search_results(self, html_text: str) -> list[dict]:
@@ -121,5 +119,5 @@ class MetacriticScraper(AbstractMovieScraper):
         }
 
     @staticmethod
-    async def _get_search_page_content(site_url) -> str:
-        return await fetch_search_results_with_playwright(site_url)
+    async def _get_search_page_content(url) -> str:
+        return await fetch_search_results_with_playwright(url)
