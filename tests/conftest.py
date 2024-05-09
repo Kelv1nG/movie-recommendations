@@ -1,6 +1,5 @@
-from datetime import date, datetime
-from typing import TYPE_CHECKING, Any
-from uuid import UUID
+import logging
+from typing import TYPE_CHECKING
 
 import pytest
 from litestar.testing import TestClient
@@ -9,6 +8,9 @@ if TYPE_CHECKING:
     from collections import abc
 
     from litestar import Litestar
+
+
+logging.basicConfig(level=logging.INFO)
 
 
 @pytest.fixture()
