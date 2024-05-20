@@ -3,7 +3,7 @@ from litestar import Litestar
 from app.api.routers import route_handlers
 
 
-def create_app(**kwargs: any) -> Litestar:
+def create_app(**kwargs) -> Litestar:
     return Litestar(
         route_handlers=route_handlers,
         **kwargs,

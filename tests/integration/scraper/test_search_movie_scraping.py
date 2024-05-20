@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 import asyncio
-import logging
 from typing import TYPE_CHECKING
 
 from httpx import AsyncClient
 
-from app.domain.scraper.metacritic import constants
+from app.scraper.metacritic import constants
 
 if TYPE_CHECKING:
     from httpx import AsyncClient
@@ -48,11 +47,7 @@ async def test_get_movie_details(client: AsyncClient):
             ]
             assert value, f"{key} is blank"
 
-    search_list = [
-        "toy-story",
-        "the-grand-budapest-hotel",
-        "ratatouille"
-    ]
+    search_list = ["toy-story", "the-grand-budapest-hotel", "ratatouille"]
     await asyncio.gather(
         *[get_details_and_assert_structure(slug) for slug in search_list]
     )
