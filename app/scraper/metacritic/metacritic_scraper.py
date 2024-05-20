@@ -4,12 +4,13 @@ from urllib.parse import quote
 import bs4
 from bs4 import BeautifulSoup
 
-from app.domain.scraper import schemas
-from app.domain.scraper.abstract_scraper import AbstractMovieScraper
-from app.domain.scraper.metacritic import selectors
+from app.scraper.abstract_scraper import AbstractMovieScraper
 
+from . import selectors
 from .helpers import (
+    extract_image_thumbnail_url,
     extract_movie_details,
+    extract_text,
     fetch_details_with_requests,
     fetch_search_results_with_playwright,
 )
@@ -92,20 +93,8 @@ class MetacriticScraper(AbstractMovieScraper):
         :param tag: A BeautifulSoup pageElement representing a search result.
         :return: A dictionary containing the details of the search result.
         """
-
-        async def extract_text(element_tag, selector):
-            result_tag = element_tag.find(selector.tag, selector.css)
-            return result_tag.text.strip() if result_tag is not None else None
-
-        async def extract_image_thumbnail_url(element_tag, selector):
-            result_tag = element_tag.find(selector.tag, selector.css)
-            if result_tag:
-                image_tag = result_tag.find("img")
-                return image_tag["src"] if image_tag else None
-            return None
-
         movie_url = f'{self.site_url}{tag.get("href")}'
-        thumbnail_url, title, type_, date, rating = await asyncio.gather(
+        thumbnail_url, title, type_, date, rating = (
             extract_image_thumbnail_url(tag, selectors.RESULT_IMAGE_SELECTOR),
             extract_text(tag, selectors.RESULT_NAME_SELECTOR),
             extract_text(tag, selectors.RESULT_TYPE_SELECTOR),

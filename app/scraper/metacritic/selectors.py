@@ -1,4 +1,4 @@
-from app.domain.scraper.schemas import HtmlElementSelector
+from app.scraper.schemas import HtmlElementSelector
 
 SEARCH_RESULTS_SELECTOR = HtmlElementSelector(
     tag="a", css="c-pageSiteSearch-results-item"
@@ -9,6 +9,10 @@ RESULT_IMAGE_SELECTOR = HtmlElementSelector(tag="picture", css="c-cmsImage")
 RESULT_TYPE_SELECTOR = HtmlElementSelector(tag="span", css="c-tagList_button")
 RESULT_YEAR_SELECTOR = HtmlElementSelector(tag="span", css="u-text-uppercase")
 RESULT_RATING_SELECTOR = HtmlElementSelector(tag="div", css="c-siteReviewScore")
+
+MOVIES_NAVIGATION_SELECTOR_STRING = (
+    'li.c-productSubpageNavigation_menu_item span:has-text("Movies")'
+)
 
 # selectors for specific movie
 DETAIL_NAME_SELECTOR = HtmlElementSelector(tag="div", css="c-productHero_title")

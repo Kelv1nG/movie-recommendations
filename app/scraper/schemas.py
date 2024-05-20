@@ -22,6 +22,7 @@ class MovieDetails(BaseModel):
     movie_url: str
     movie_slug: str
     description: str
+    directors: list[str]
     genres: list[str]
     release_date: str
     duration: str
