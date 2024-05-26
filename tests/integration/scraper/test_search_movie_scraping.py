@@ -35,6 +35,7 @@ async def test_get_movie_details(client: AsyncClient):
             assert key in [
                 "movie_url",
                 "movie_slug",
+                "directors",
                 "description",
                 "genres",
                 "release_date",
